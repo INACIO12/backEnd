@@ -1,0 +1,61 @@
+
+// codigo para criar a api key
+import requests
+
+# URL da API
+url = "http://localhost:3000/generate-api-key"
+
+# Token JWT obtido após login
+token_jwt = "<token-jwt-gerado>"
+
+# Cabeçalho com o token de autorização
+headers = {
+    "Authorization": f"Bearer {token_jwt}"
+}
+
+# Fazendo a solicitação POST
+response = requests.post(url, headers=headers)
+
+# Verificando a resposta
+if response.status_code == 201:
+    data = response.json()
+    print(f"API Key gerada: {data['apiKey']}")
+else:
+    print(f"Erro: {response.status_code}, {response.text}")
+
+
+
+// rota para gerar a resposta da IA
+import requests
+
+# URL da API
+url = "http://localhost:3000/api/groq-chat"
+
+# API key obtida
+api_key = "61a21279-16c6-4a55-a893-91b1e6f50888"
+
+# Cabeçalhos da solicitação
+headers = {
+    "x-api-key": api_key,
+    "Content-Type": "application/json"
+}
+
+# Dados da solicitação
+data = {
+    "message": "qual e o seu"
+}
+
+# Fazendo a solicitação POST
+response = requests.post(url, headers=headers, json=data)
+
+# Verificando a resposta
+if response.status_code == 200:
+    response_data = response.json()
+    print(f"Resposta da API: {response_data}")
+else:
+    print(f"Erro: {response.status_code}, {response.text}")
+
+
+
+/// 
+curl -X POST http://localhost:3000/generate-access-token -H "Authorization: Bearer <token-jwt-gerado>"
