@@ -6,11 +6,11 @@ const jwt = require('jsonwebtoken');
 const cors = require("cors");
 const { v4: uuidv4 } = require('uuid');
 require('dotenv').config();
-const Groq = require('groq-sdk');  // Importa o SDK do Groq
+const Groq = require('groq-sdk');
 
 const app = express();
 const prisma = new PrismaClient();
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });  // Inicializa o Groq com a API key do ambiente
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -25,17 +25,6 @@ const authenticateToken = (req, res, next) => {
     req.user = user;
     next();
   });
-};
-
-const verifyApiKey = async (req, res, next) => {
-  const apiKey = req.headers['x-api-key'];
-  if (!apiKey) return res.status(403).json({ message: 'API key não fornecida' });
-
-  const key = await prisma.apiKey.findUnique({ where: { key: apiKey } });
-  if (!key) return res.status(403).json({ message: 'API key inválida' });
-
-  req.userId = key.userId;
-  next();
 };
 
 // Rota de cadastro
@@ -73,13 +62,13 @@ app.post('/login', async (req, res) => {
 // Rota para gerar API key
 app.post('/generate-api-key', authenticateToken, async (req, res) => {
   const apiKey = uuidv4();
-  await prisma.apiKey.create({
+  const key = await prisma.apiKey.create({
     data: {
       key: apiKey,
       userId: req.user.userId,
     },
   });
-  res.status(201).json({ apiKey });
+  res.status(201).json({ apiKey: key.key });
 });
 
 // Rota para gerar token de acesso à API
@@ -99,6 +88,19 @@ const verifyAccessToken = (req, res, next) => {
     next();
   });
 };
+
+// Nova rota para obter todas as chaves de API de um usuário
+app.get('/api-keys', authenticateToken, async (req, res) => {
+  try {
+    const keys = await prisma.apiKey.findMany({
+      where: { userId: req.user.userId },
+    });
+    res.json(keys);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Erro ao buscar as chaves de API' });
+  }
+});
 
 // Rota protegida que consome a API externa (Groq)
 app.post('/api/groq-chat', verifyAccessToken, async (req, res) => {
