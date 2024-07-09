@@ -27,6 +27,21 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
+// Função para verificar a API Key
+const verifyApiKey = async (req, res, next) => {
+  const apiKey = req.headers['x-api-key'];
+  if (!apiKey) return res.sendStatus(401);
+
+  const key = await prisma.apiKey.findUnique({
+    where: { key: apiKey },
+  });
+
+  if (!key) return res.sendStatus(403);
+
+  req.user = { userId: key.userId };
+  next();
+};
+
 // Rota de cadastro
 app.post('/register', async (req, res) => {
   const { email, password } = req.body;
@@ -77,18 +92,6 @@ app.post('/generate-access-token', authenticateToken, (req, res) => {
   res.json({ token: apiAccessToken });
 });
 
-const verifyAccessToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  if (!token) return res.sendStatus(401);
-
-  jwt.verify(token, 'api-access-secret-key', (err, user) => {
-    if (err) return res.sendStatus(403);
-    req.user = user;
-    next();
-  });
-};
-
 // Nova rota para obter todas as chaves de API de um usuário
 app.get('/api-keys', authenticateToken, async (req, res) => {
   try {
@@ -103,7 +106,7 @@ app.get('/api-keys', authenticateToken, async (req, res) => {
 });
 
 // Rota protegida que consome a API externa (Groq)
-app.post('/api/groq-chat', verifyAccessToken, async (req, res) => {
+app.post('/api/groq-chat', verifyApiKey, async (req, res) => {
   try {
     const chatCompletion = await groq.chat.completions.create({
       messages: [
