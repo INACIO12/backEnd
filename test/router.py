@@ -14,7 +14,7 @@ headers_groq_chat = {
 
 # Dados da requisição
 data_groq_chat = {
-    "message": "vamos falar em pt-br"
+    "message": "como ganhar dinheiro??"
 }
 
 # Fazer a requisição

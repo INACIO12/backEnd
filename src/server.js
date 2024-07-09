@@ -76,10 +76,12 @@ app.post('/login', async (req, res) => {
 
 // Rota para gerar API key
 app.post('/generate-api-key', authenticateToken, async (req, res) => {
+  const { name } = req.body;
   const apiKey = uuidv4();
   const key = await prisma.apiKey.create({
     data: {
       key: apiKey,
+      name: name || 'Default API Key Name',
       userId: req.user.userId,
     },
   });
