@@ -227,5 +227,5 @@ app.get('/apikeys/count', authenticateToken, async (req, res) => {
 
 
 app.listen(3000, () => {
-  console.log('Servidor rodando em http://localhost:3000');
+  console.log('Servidor nj rodando em http://localhost:3000');
 });
