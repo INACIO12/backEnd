@@ -9,6 +9,8 @@ generator client {
 
 model User {
   id       Int      @id @default(autoincrement())
+  username String ?
+  PhoneNumber String ?
   email    String   @unique
   password String
   apiKeys  ApiKey[]

@@ -126,6 +126,106 @@ app.post('/api/groq-chat', verifyApiKey, async (req, res) => {
   }
 });
 
+
+app.delete('/api-keys/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Verifique se a API Key existe
+    const apiKey = await prisma.apiKey.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!apiKey) {
+      return res.status(404).json({ error: 'API Key not found' });
+    }
+
+    // Apague a API Key
+    await prisma.apiKey.delete({
+      where: { id: parseInt(id) },
+    });
+
+    res.status(200).json({ message: 'API Key deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+app.patch('/api-keys/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  const { name } = req.body;
+
+  try {
+    // Verifique se a API Key existe
+    const apiKey = await prisma.apiKey.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!apiKey) {
+      return res.status(404).json({ error: 'API Key not found' });
+    }
+
+    // Atualize o nome da API Key
+    const updatedApiKey = await prisma.apiKey.update({
+      where: { id: parseInt(id) },
+      data: { name },
+    });
+
+    res.status(200).json(updatedApiKey);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+app.patch('/users/name', authenticateToken, async (req, res) => {
+  const newUsername = req.body.username;
+
+  try {
+    const updatedUser = await prisma.user.update({
+      where: { id: req.user.userId },
+      data: { username: newUsername },
+    });
+
+    res.json({ message: `Username updated to ${newUsername}` });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error updating username' });
+  }
+});
+
+app.get('/users/me', authenticateToken, async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.userId },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error fetching user details' });
+  }
+});
+
+app.get('/apikeys/count', authenticateToken, async (req, res) => {
+  try {
+    const count = await prisma.apiKey.count({
+      where: { userId: req.userId },
+    });
+    res.json({ count });
+  } catch (error) {
+    res.status(500).send('Error fetching API key count');
+  }
+});
+
+
+
+
 app.listen(3000, () => {
   console.log('Servidor rodando em http://localhost:3000');
 });

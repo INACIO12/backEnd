@@ -1,7 +1,7 @@
 import requests
 
 # Defina a API Key
-api_key = 'cde8f340-b849-40e7-8a9e-f39afa665559'
+api_key = 'f88b207d-607a-4151-af76-5e091a01183c'
 
 # URL da API groq-chat
 url_groq_chat = "http://localhost:3000/api/groq-chat"
